@@ -1,0 +1,28 @@
+[
+  {
+    "name": "Alice",
+    "id" : "alice@example.com",
+    "age": 28,
+    "preferred_name": "Alice",
+    "emotional_tone": "gentle and reassuring",
+    "daily_routine": "Doesn't get up before 10 AM and drinks two cups of coffee before lunch.",
+    "family_notes": "Father Bob and mother Charlie visit on weekends.",
+    "reminders": [
+      "Physiotherapy at 4pm on Thursday.",
+      "Swim training every Tuesday and Friday at 5pm."
+    ]
+  },
+  {
+    "name": "Daniel",
+    "id": "daniel@example.com",
+    "age": 35,
+    "preferred_name": "Dan",
+    "emotional_tone": "warm and thoughtful",
+    "daily_routine": "Wakes up around 7 AM, enjoys a morning walk followed by a large mug of tea and the newspaper.",
+    "family_notes": "Married to Ester. Parents live oversees in Spain.",
+    "reminders": [
+      "Gardening club every Wednesday at 3pm.",
+      "Call Dr. Levin for a check-up appointment."
+    ]
+  }
+]

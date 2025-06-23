@@ -1,0 +1,105 @@
+/* Add these styles to your existing style.css */
+
+/* Status indicator styles */
+.status-indicator {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.status-text {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  transition: color 0.3s ease;
+}
+
+.status-text.listening {
+  color: #3b82f6; /* Blue */
+}
+
+.status-text.speaking {
+  color: #10b981; /* Green */
+}
+
+.status-text.paused {
+  color: #f59e0b; /* Amber */
+}
+
+.status-text.processing {
+  color: #8b5cf6; /* Purple */
+}
+
+/* Volume bar */
+.volume-bar {
+  height: 4px;
+  background: linear-gradient(to right, #10b981, #f59e0b, #ef4444);
+  border-radius: 2px;
+  transition: width 0.1s ease;
+  min-width: 2px;
+}
+
+/* Transcription area */
+.transcription-area {
+  margin-top: 2rem;
+  max-width: 600px;
+  width: 100%;
+}
+
+.transcription-area h3 {
+  color: rgba(255, 255, 255, 0.87);
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.transcription-list {
+  max-height: 300px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.transcription-item {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  border-left: 3px solid #3b82f6;
+}
+
+.transcription-item:last-child {
+  margin-bottom: 0;
+}
+
+.transcription-item .timestamp {
+  display: block;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 0.25rem;
+}
+
+.transcription-item .text {
+  color: rgba(255, 255, 255, 0.87);
+  line-height: 1.4;
+}
+
+/* Enhanced button states */
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .transcription-area {
+    margin-top: 1rem;
+  }
+
+  .transcription-list {
+    max-height: 200px;
+  }
+}

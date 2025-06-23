@@ -43,17 +43,6 @@ async function setupAudioContext() {
   await audioContext.audioWorklet.addModule('/audio-worklet-processor.js');
 }
 
-// Convert Float32Array [-1,1] to Int16Array PCM buffer
-// function float32To16BitPCM(float32Array) {
-//   const int16Array = new Int16Array(float32Array.length);
-//   for (let i = 0; i < float32Array.length; i++) {
-//     let s = Math.max(-1, Math.min(1, float32Array[i]));
-//     int16Array[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
-//   }
-//   return int16Array.buffer; // Return raw ArrayBuffer
-// }
-
-
 // Helper: merge Float32Array chunks into one
 function mergeBuffers(chunks) {
   let totalLength = 0;
@@ -127,7 +116,6 @@ stopBtn.addEventListener('click', async () => {
 
   // Prepare form data
   const formData = new FormData();
-  // formData.append('file', pcmBlob, 'recording.pcm');
   formData.append('file', wavBlob, 'recording.wav');
 
 

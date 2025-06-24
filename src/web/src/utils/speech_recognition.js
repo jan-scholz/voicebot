@@ -3,10 +3,10 @@ import { createWAVBlob, mergeBuffers } from './audio.js';
 class SpeechRecognition {
   constructor(stateManager, onTranscription) {
     // Configuration constants
-    this.SILENCE_THRESHOLD = 0.01;
-    this.MIN_SPEECH_DURATION = 500;
-    this.PAUSE_DURATION = 1500;
-    this.MIN_AUDIO_DURATION = 1000;
+    this.SILENCE_THRESHOLD = 0.01;  // RMS threshold for silence
+    this.MIN_SPEECH_DURATION = 500; // Min speech duration before pause detection (ms)
+    this.PAUSE_DURATION = 1500;     // Duration of silence to trigger send (ms)
+    this.MIN_AUDIO_DURATION = 1000; // Minimum total audio duration to send (ms)
     
     // State
     this.audioChunks = [];

@@ -5,7 +5,7 @@ import javascriptLogo from './javascript.svg'
 import viteLogo from '/vite.svg'
 import { StateManager, UIObserver } from './utils/state_manager.js';
 import { SpeechRecognition } from './utils/speech_recognition.js';
-import { setupCollapsibleSections } from  './utils/sidebar.js';
+import * as sidebarUtils from './utils/sidebar.js';
 
 document.querySelector('#app').innerHTML = `
   <div class="main-container">
@@ -150,6 +150,12 @@ const stateManager = new StateManager();
 const uiObserver = new UIObserver();
 stateManager.subscribe(uiObserver);
 
+// sidebar
+let speechEnabled = true
+let speechSettings = {
+  voice: 'en-US-JennyMultilingualNeural'
+}
+
 // Speech recognition
 const speechRecognition = new SpeechRecognition(stateManager, addTranscriptionToUI);
 
@@ -253,7 +259,14 @@ async function initApp() {
   console.log('Application initializing...');
   await setupAudioContext();
   stateManager.updateCurrentState('idle');
-  setupCollapsibleSections();
+
+  // sidebar
+  sidebarUtils.setupCollapsibleSections();
+  await sidebarUtils.loadProfiles()
+  // setupChatControls()
+  // setupSpeechControls()
+  // setupWakeWordControls()
+
 }
 
 initApp();

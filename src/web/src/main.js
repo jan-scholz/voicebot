@@ -3,6 +3,7 @@ import './styles/status.css'
 import javascriptLogo from './javascript.svg'
 import viteLogo from '/vite.svg'
 import { createWAVBlob, mergeBuffers } from './utils/audio.js';
+import { StateManager, UIObserver } from './utils/state_manager.js';
 
 document.querySelector('#app').innerHTML = `
   <div class="main-container">
@@ -42,8 +43,11 @@ document.querySelector('#app').innerHTML = `
 let audioContext;
 let recorderNode;
 let audioChunks = [];
-let isRecording = false;
-let currentState = 'idle'; // 'idle', 'listening', 'speaking', 'paused', 'processing'
+
+// State management
+const stateManager = new StateManager();
+const uiObserver = new UIObserver();
+stateManager.subscribe(uiObserver);
 
 // Pause detection configuration
 const SILENCE_THRESHOLD = 0.01; // RMS threshold for silence
@@ -67,33 +71,6 @@ async function setupAudioContext() {
   await audioContext.audioWorklet.addModule('/audio-worklet-processor.js');
 }
 
-// Update UI based on current state
-function updateUI(state) {
-  currentState = state;
-  
-  switch (state) {
-    case 'idle':
-      statusText.textContent = 'Ready';
-      statusText.className = 'status-text';
-      break;
-    case 'listening':
-      statusText.textContent = 'Listening...';
-      statusText.className = 'status-text listening';
-      break;
-    case 'speaking':
-      statusText.textContent = 'Speaking detected';
-      statusText.className = 'status-text speaking';
-      break;
-    case 'paused':
-      statusText.textContent = 'Pause detected';
-      statusText.className = 'status-text paused';
-      break;
-    case 'processing':
-      statusText.textContent = 'Processing...';
-      statusText.className = 'status-text processing';
-      break;
-  }
-}
 
 // Handle pause detection logic
 function handleVolumeLevel(volumeLevel, timestamp) {
@@ -104,9 +81,10 @@ function handleVolumeLevel(volumeLevel, timestamp) {
     // Speech detected
     lastSpeechTime = now;
     
+    const currentState = stateManager.getState().currentState;
     if (currentState === 'listening' || currentState === 'paused') {
       speechStartTime = speechStartTime || now;
-      updateUI('speaking');
+      stateManager.updateCurrentState('speaking');
     }
     
     // Clear any pending pause timer
@@ -116,12 +94,13 @@ function handleVolumeLevel(volumeLevel, timestamp) {
     }
   } else {
     // Silence detected
+    const currentState = stateManager.getState().currentState;
     if (currentState === 'speaking' && speechStartTime) {
       const speechDuration = now - speechStartTime;
       
       // Only trigger pause detection if we've been speaking long enough
       if (speechDuration > MIN_SPEECH_DURATION) {
-        updateUI('paused');
+        stateManager.updateCurrentState('paused');
         
         // Set timer to send audio after pause duration
         pauseTimer = setTimeout(() => {
@@ -129,9 +108,9 @@ function handleVolumeLevel(volumeLevel, timestamp) {
         }, PAUSE_DURATION);
       }
     } else if (currentState === 'listening') {
-      updateUI('listening');
+      stateManager.updateCurrentState('listening');
     } else if (currentState === 'paused') {
-      updateUI('paused');
+      stateManager.updateCurrentState('paused');
     }
   }
 }
@@ -153,7 +132,7 @@ async function sendCurrentAudio() {
     return;
   }
   
-  updateUI('processing');
+  stateManager.updateCurrentState('processing');
   
   try {
     // Extract audio data from chunks (removing volume info)
@@ -186,8 +165,9 @@ async function sendCurrentAudio() {
   resetSpeechDetection();
   
   // Continue listening if still recording
+  const isRecording = stateManager.getState().isRecording;
   if (isRecording) {
-    updateUI('listening');
+    stateManager.updateCurrentState('listening');
   }
 }
 
@@ -218,7 +198,7 @@ function addTranscriptionToUI(transcription) {
 startListeningBtn.addEventListener('click', async () => {
   startListeningBtn.disabled = true;
   stopBtn.disabled = false;
-  isRecording = true;
+  stateManager.setRecording(true);
   
   // Get mic stream
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -235,6 +215,7 @@ startListeningBtn.addEventListener('click', async () => {
   recorderNode = new AudioWorkletNode(audioContext, 'pcm-recorder-processor');
   
   recorderNode.port.onmessage = (event) => {
+    const isRecording = stateManager.getState().isRecording;
     if (!isRecording) return;
     audioChunks.push(event.data);
     handleVolumeLevel(event.data.volumeLevel, event.data.timestamp);
@@ -242,14 +223,14 @@ startListeningBtn.addEventListener('click', async () => {
   
   source.connect(recorderNode).connect(audioContext.destination);
   
-  updateUI('listening');
+  stateManager.updateCurrentState('listening');
   console.log('Continuous recording started with pause detection');
 });
 
 stopBtn.addEventListener('click', async () => {
   startListeningBtn.disabled = false;
   stopBtn.disabled = true;
-  isRecording = false;
+  stateManager.setRecording(false);
   
   if (!audioContext) {
     console.error('AudioContext not initialized');
@@ -274,7 +255,7 @@ stopBtn.addEventListener('click', async () => {
   }
   
   resetSpeechDetection();
-  updateUI('idle');
+  stateManager.updateCurrentState('idle');
   
   console.log('Recording stopped');
 });
@@ -290,7 +271,7 @@ sidebarToggle.addEventListener('click', () => {
 async function initApp() {
   console.log('Application initializing...');
   await setupAudioContext();
-  updateUI('idle');
+  stateManager.updateCurrentState('idle');
 }
 
 initApp();

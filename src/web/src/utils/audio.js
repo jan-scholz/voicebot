@@ -1,4 +1,4 @@
-export function createWAVBlob(float32Array, sampleRate) {
+function createWAVBlob(float32Array, sampleRate) {
   // Create buffer for header + audio data
   const buffer = new ArrayBuffer(44 + float32Array.length * 2);
   const view = new DataView(buffer);
@@ -29,3 +29,22 @@ export function createWAVBlob(float32Array, sampleRate) {
 
   return new Blob([buffer], { type: 'audio/wav' });
 }
+
+// Helper: merge Float32Array chunks into one
+function mergeBuffers(chunks) {
+  let totalLength = 0;
+  for (const chunk of chunks) {
+    totalLength += chunk.length;
+  }
+
+  const result = new Float32Array(totalLength);
+  let offset = 0;
+  for (const chunk of chunks) {
+    result.set(chunk, offset);
+    offset += chunk.length;
+  }
+
+  return result;
+}
+
+export { createWAVBlob, mergeBuffers }

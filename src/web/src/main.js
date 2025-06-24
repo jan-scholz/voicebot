@@ -2,7 +2,7 @@ import './style.css'
 import './styles/status.css'
 import javascriptLogo from './javascript.svg'
 import viteLogo from '/vite.svg'
-import { createWAVBlob } from './utils/audio.js';
+import { createWAVBlob, mergeBuffers } from './utils/audio.js';
 
 document.querySelector('#app').innerHTML = `
   <div class="main-container">
@@ -68,23 +68,6 @@ const transcriptionList = document.querySelector('#transcription-list');
 async function setupAudioContext() {
   audioContext = new AudioContext({ sampleRate: 16000 });
   await audioContext.audioWorklet.addModule('/audio-worklet-processor.js');
-}
-
-// Helper: merge Float32Array chunks into one
-function mergeBuffers(chunks) {
-  let totalLength = 0;
-  for (const chunk of chunks) {
-    totalLength += chunk.length;
-  }
-
-  const result = new Float32Array(totalLength);
-  let offset = 0;
-  for (const chunk of chunks) {
-    result.set(chunk, offset);
-    offset += chunk.length;
-  }
-
-  return result;
 }
 
 // Update UI based on current state
@@ -182,9 +165,7 @@ async function sendCurrentAudio() {
   
   try {
     // Extract audio data from chunks (removing volume info)
-    const audioOnlyChunks = audioChunks.map(chunk => 
-      chunk.audioData || chunk // Handle both old and new format
-    );
+    const audioOnlyChunks = audioChunks.map(chunk => chunk.audioData);
     
     const float32Buffer = mergeBuffers(audioOnlyChunks);
     const wavBlob = createWAVBlob(float32Buffer, 16000);
@@ -263,19 +244,8 @@ startListeningBtn.addEventListener('click', async () => {
   
   recorderNode.port.onmessage = (event) => {
     if (!isRecording) return;
-    
-    // Handle both old format (Float32Array) and new format (object with audioData and volumeLevel)
-    if (event.data.audioData) {
-      // New format with volume analysis
-      audioChunks.push(event.data);
-      handleVolumeLevel(event.data.volumeLevel, event.data.timestamp);
-    } else {
-      // Old format - just audio data
-      audioChunks.push(event.data);
-      // Calculate volume for old format
-      const rms = calculateRMS(event.data);
-      handleVolumeLevel(rms, Date.now());
-    }
+    audioChunks.push(event.data);
+    handleVolumeLevel(event.data.volumeLevel, event.data.timestamp);
   };
   
   source.connect(recorderNode).connect(audioContext.destination);
@@ -316,15 +286,6 @@ stopBtn.addEventListener('click', async () => {
   
   console.log('Recording stopped');
 });
-
-// Helper function for RMS calculation (fallback for old format)
-function calculateRMS(audioData) {
-  let sum = 0;
-  for (let i = 0; i < audioData.length; i++) {
-    sum += audioData[i] * audioData[i];
-  }
-  return Math.sqrt(sum / audioData.length);
-}
 
 // Setup sidebar toggle functionality
 const sidebar = document.querySelector('#sidebar');

@@ -2,8 +2,8 @@ import './style.css'
 import './styles/status.css'
 import javascriptLogo from './javascript.svg'
 import viteLogo from '/vite.svg'
-import { createWAVBlob, mergeBuffers } from './utils/audio.js';
 import { StateManager, UIObserver } from './utils/state_manager.js';
+import { SpeechRecognition } from './utils/speech_recognition.js';
 
 document.querySelector('#app').innerHTML = `
   <div class="main-container">
@@ -39,26 +39,17 @@ document.querySelector('#app').innerHTML = `
   </div>
 `
 
-// Audio recording and pause detection state
+// Audio recording state
 let audioContext;
 let recorderNode;
-let audioChunks = [];
 
 // State management
 const stateManager = new StateManager();
 const uiObserver = new UIObserver();
 stateManager.subscribe(uiObserver);
 
-// Pause detection configuration
-const SILENCE_THRESHOLD = 0.01; // RMS threshold for silence
-const MIN_SPEECH_DURATION = 500; // Minimum speech duration before pause detection (ms)
-const PAUSE_DURATION = 1500; // Duration of silence to trigger send (ms)
-const MIN_AUDIO_DURATION = 1000; // Minimum total audio duration to send (ms)
-
-// Timing variables
-let speechStartTime = null;
-let lastSpeechTime = null;
-let pauseTimer = null;
+// Speech recognition
+const speechRecognition = new SpeechRecognition(stateManager, addTranscriptionToUI);
 
 // UI elements
 const startListeningBtn = document.querySelector('#start-listening');
@@ -72,116 +63,8 @@ async function setupAudioContext() {
 }
 
 
-// Handle pause detection logic
-function handleVolumeLevel(volumeLevel, timestamp) {
-  const now = Date.now();
-  const isSpeaking = volumeLevel > SILENCE_THRESHOLD;
-  
-  if (isSpeaking) {
-    // Speech detected
-    lastSpeechTime = now;
-    
-    const currentState = stateManager.getState().currentState;
-    if (currentState === 'listening' || currentState === 'paused') {
-      speechStartTime = speechStartTime || now;
-      stateManager.updateCurrentState('speaking');
-    }
-    
-    // Clear any pending pause timer
-    if (pauseTimer) {
-      clearTimeout(pauseTimer);
-      pauseTimer = null;
-    }
-  } else {
-    // Silence detected
-    const currentState = stateManager.getState().currentState;
-    if (currentState === 'speaking' && speechStartTime) {
-      const speechDuration = now - speechStartTime;
-      
-      // Only trigger pause detection if we've been speaking long enough
-      if (speechDuration > MIN_SPEECH_DURATION) {
-        stateManager.updateCurrentState('paused');
-        
-        // Set timer to send audio after pause duration
-        pauseTimer = setTimeout(() => {
-          sendCurrentAudio();
-        }, PAUSE_DURATION);
-      }
-    } else if (currentState === 'listening') {
-      stateManager.updateCurrentState('listening');
-    } else if (currentState === 'paused') {
-      stateManager.updateCurrentState('paused');
-    }
-  }
-}
 
-// Send current audio to backend
-async function sendCurrentAudio() {
-  if (audioChunks.length === 0) {
-    console.log('No audio to send');
-    return;
-  }
-  
-  const now = Date.now();
-  const totalDuration = speechStartTime ? now - speechStartTime : 0;
-  
-  // Don't send very short audio clips
-  if (totalDuration < MIN_AUDIO_DURATION) {
-    console.log('Audio too short, continuing to record');
-    resetSpeechDetection();
-    return;
-  }
-  
-  stateManager.updateCurrentState('processing');
-  
-  try {
-    // Extract audio data from chunks (removing volume info)
-    const audioOnlyChunks = audioChunks.map(chunk => chunk.audioData);
-    
-    const float32Buffer = mergeBuffers(audioOnlyChunks);
-    const wavBlob = createWAVBlob(float32Buffer, 16000);
-    
-    // Prepare form data
-    const formData = new FormData();
-    formData.append('file', wavBlob, 'recording.wav');
-    
-    const resp = await fetch('/process-audio', {
-      method: 'POST',
-      body: formData,
-    });
-    
-    const data = await resp.json();
-    console.log('Transcription:', data.transcription);
-    
-    // Add transcription to UI
-    addTranscriptionToUI(data.transcription);
-    
-  } catch (err) {
-    console.error('Upload error:', err);
-    addTranscriptionToUI('Error: Could not process audio');
-  }
-  
-  // Reset for next speech segment
-  resetSpeechDetection();
-  
-  // Continue listening if still recording
-  const isRecording = stateManager.getState().isRecording;
-  if (isRecording) {
-    stateManager.updateCurrentState('listening');
-  }
-}
 
-// Reset speech detection variables
-function resetSpeechDetection() {
-  audioChunks = [];
-  speechStartTime = null;
-  lastSpeechTime = null;
-  
-  if (pauseTimer) {
-    clearTimeout(pauseTimer);
-    pauseTimer = null;
-  }
-}
 
 // Add transcription to UI
 function addTranscriptionToUI(transcription) {
@@ -217,8 +100,8 @@ startListeningBtn.addEventListener('click', async () => {
   recorderNode.port.onmessage = (event) => {
     const isRecording = stateManager.getState().isRecording;
     if (!isRecording) return;
-    audioChunks.push(event.data);
-    handleVolumeLevel(event.data.volumeLevel, event.data.timestamp);
+    speechRecognition.addAudioChunk(event.data);
+    speechRecognition.handleVolumeLevel(event.data.volumeLevel, event.data.timestamp);
   };
   
   source.connect(recorderNode).connect(audioContext.destination);
@@ -238,8 +121,8 @@ stopBtn.addEventListener('click', async () => {
   }
   
   // Send any remaining audio before stopping
-  if (audioChunks.length > 0 && speechStartTime) {
-    await sendCurrentAudio();
+  if (speechRecognition.audioChunks.length > 0 && speechRecognition.speechStartTime) {
+    await speechRecognition.sendCurrentAudio();
   }
   
   // Clean up audio nodes
@@ -254,7 +137,7 @@ stopBtn.addEventListener('click', async () => {
     tracks.forEach(track => track.stop());
   }
   
-  resetSpeechDetection();
+  speechRecognition.resetSpeechDetection();
   stateManager.updateCurrentState('idle');
   
   console.log('Recording stopped');

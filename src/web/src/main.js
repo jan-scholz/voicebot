@@ -1,5 +1,6 @@
 import './style.css'
 import './styles/status.css'
+import './styles/sidebar.css'
 import javascriptLogo from './javascript.svg'
 import viteLogo from '/vite.svg'
 import { StateManager, UIObserver } from './utils/state_manager.js';
@@ -61,10 +62,6 @@ async function setupAudioContext() {
   audioContext = new AudioContext({ sampleRate: 16000 });
   await audioContext.audioWorklet.addModule('/audio-worklet-processor.js');
 }
-
-
-
-
 
 // Add transcription to UI
 function addTranscriptionToUI(transcription) {

@@ -73,66 +73,6 @@ h1 {
   text-align: center;
 }
 
-.sidebar {
-  position: fixed;
-  top: 0;
-  right: 0;
-  height: 100vh;
-  width: 450px;
-  background-color: white;
-  border-left: 1px solid #ddd;
-  transform: translateX(100%);
-  transition: transform 0.3s ease-in-out;
-  z-index: 1000;
-}
-
-.sidebar.open {
-  transform: translateX(0);
-}
-
-.sidebar-toggle {
-  position: absolute;
-  left: -40px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 40px;
-  height: 60px;
-  background-color: rgba(26, 26, 26, 0.95);
-  border: 1px solid #333;
-  border-right: none;
-  border-radius: 8px 0 0 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background-color 0.25s;
-}
-
-.sidebar-toggle:hover {
-  background-color: rgba(40, 40, 40, 0.95);
-}
-
-.arrow {
-  font-size: 1.5em;
-  color: #646cff;
-  transition: transform 0.3s ease-in-out;
-  user-select: none;
-}
-
-.sidebar.open .arrow {
-  transform: rotate(180deg);
-}
-
-.sidebar-content {
-  padding: 2rem;
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out 0.1s;
-  color: #333;
-}
-
-.sidebar.open .sidebar-content {
-  opacity: 1;
-}
 
 .audiobot-logo {
   height: 3em;

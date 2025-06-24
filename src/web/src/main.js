@@ -16,7 +16,6 @@ document.querySelector('#app').innerHTML = `
         <button id="stop" type="button">Stop</button>
         <div class="status-indicator" id="status-indicator">
           <span class="status-text" id="status-text">Ready</span>
-          <div class="volume-bar" id="volume-bar"></div>
         </div>
       </div>
       <div class="transcription-area" id="transcription-area">
@@ -56,13 +55,11 @@ const MIN_AUDIO_DURATION = 1000; // Minimum total audio duration to send (ms)
 let speechStartTime = null;
 let lastSpeechTime = null;
 let pauseTimer = null;
-let volumeSmoothing = 0;
 
 // UI elements
 const startListeningBtn = document.querySelector('#start-listening');
 const stopBtn = document.querySelector('#stop');
 const statusText = document.querySelector('#status-text');
-const volumeBar = document.querySelector('#volume-bar');
 const transcriptionList = document.querySelector('#transcription-list');
 
 async function setupAudioContext() {
@@ -71,13 +68,8 @@ async function setupAudioContext() {
 }
 
 // Update UI based on current state
-function updateUI(state, volumeLevel = 0) {
+function updateUI(state) {
   currentState = state;
-  
-  // Smooth volume level for visual feedback
-  volumeSmoothing = volumeSmoothing * 0.8 + volumeLevel * 0.2;
-  const volumePercentage = Math.min(volumeSmoothing * 100, 100);
-  volumeBar.style.width = `${volumePercentage}%`;
   
   switch (state) {
     case 'idle':
@@ -114,7 +106,7 @@ function handleVolumeLevel(volumeLevel, timestamp) {
     
     if (currentState === 'listening' || currentState === 'paused') {
       speechStartTime = speechStartTime || now;
-      updateUI('speaking', volumeLevel);
+      updateUI('speaking');
     }
     
     // Clear any pending pause timer
@@ -129,7 +121,7 @@ function handleVolumeLevel(volumeLevel, timestamp) {
       
       // Only trigger pause detection if we've been speaking long enough
       if (speechDuration > MIN_SPEECH_DURATION) {
-        updateUI('paused', volumeLevel);
+        updateUI('paused');
         
         // Set timer to send audio after pause duration
         pauseTimer = setTimeout(() => {
@@ -137,9 +129,9 @@ function handleVolumeLevel(volumeLevel, timestamp) {
         }, PAUSE_DURATION);
       }
     } else if (currentState === 'listening') {
-      updateUI('listening', volumeLevel);
+      updateUI('listening');
     } else if (currentState === 'paused') {
-      updateUI('paused', volumeLevel);
+      updateUI('paused');
     }
   }
 }

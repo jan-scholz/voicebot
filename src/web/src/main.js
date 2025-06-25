@@ -6,7 +6,7 @@ import { sidebarHTML } from './html/sidebar.js'
 import { StateManager, UIObserver } from './utils/state_manager.js';
 import { SpeechRecognition } from './utils/speech_recognition.js';
 import * as sidebarUtils from './utils/sidebar.js';
-import { ChatLog, createChatMessage } from './utils/chat_history.js';
+import { ChatLog, createChatMessage, formatTime } from './utils/chat_history.js';
 
 document.querySelector('#app').innerHTML = `
   <div class="main-container">
@@ -144,20 +144,11 @@ stopBtn.addEventListener('click', async () => {
 });
 
 // Chat history functions
+// TODO: simplify further
 function addChatMessage(role, content, timestamp) {
   const message = createChatMessage(role, content, timestamp)
-  console.log("updating with", message)
+  console.log("addChatMessage", message)
   chatLog.addMessage(message)
-}
-
-function formatTime(isoString) {
-  const date = new Date(isoString)
-  return date.toLocaleTimeString('en-US', { 
-    hour: '2-digit', 
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: true 
-  })
 }
 
 function updateChatHistoryDisplay() {

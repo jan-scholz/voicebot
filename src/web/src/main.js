@@ -6,6 +6,7 @@ import { sidebarHTML } from './html/sidebar.js'
 import { StateManager, UIObserver } from './utils/state_manager.js';
 import { SpeechRecognition } from './utils/speech_recognition.js';
 import * as sidebarUtils from './utils/sidebar.js';
+import { sendChatMessage } from './utils/sidebar.js';
 import { ChatLog, createChatMessage, formatTime } from './utils/chat_history.js';
 
 document.querySelector('#app').innerHTML = `
@@ -53,7 +54,11 @@ const chatLog = new ChatLog(200, updateChatHistoryDisplay);
 
 // Speech recognition
 // const speechRecognition = new SpeechRecognition(stateManager, addTranscriptionToUI);
-const speechRecognition = new SpeechRecognition(stateManager, addChatMessage)
+const speechRecognition = new SpeechRecognition(stateManager, (role, content, timestamp) => {
+  if (role === 'user') {
+    sendChatMessage(content, stateManager, chatLog)
+  }
+})
 
 // UI elements
 const startListeningBtn = document.querySelector('#start-listening');

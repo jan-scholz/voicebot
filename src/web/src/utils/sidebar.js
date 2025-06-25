@@ -535,4 +535,4 @@ function cleanupAudio() {
   currentAudio = null
 }
 
-export { setupCollapsibleSections, addDebugLog, loadProfiles, setupChatControls, setupSpeechControls, setupWakeWordControls }
+export { setupCollapsibleSections, addDebugLog, loadProfiles, setupChatControls, setupSpeechControls, setupWakeWordControls, sendChatMessage }

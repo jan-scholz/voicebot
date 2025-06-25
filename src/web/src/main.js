@@ -6,6 +6,7 @@ import { sidebarHTML } from './html/sidebar.js'
 import { StateManager, UIObserver } from './utils/state_manager.js';
 import { SpeechRecognition } from './utils/speech_recognition.js';
 import * as sidebarUtils from './utils/sidebar.js';
+import { ChatLog, createChatMessage } from './utils/chat_history.js';
 
 document.querySelector('#app').innerHTML = `
   <div class="main-container">
@@ -48,8 +49,7 @@ const uiObserver = new UIObserver();
 stateManager.subscribe(uiObserver);
 
 // Chat history management
-let chatHistory = []
-const MAX_CHAT_HISTORY = 200
+const chatLog = new ChatLog(200, updateChatHistoryDisplay);
 
 // Speech recognition
 // const speechRecognition = new SpeechRecognition(stateManager, addTranscriptionToUI);
@@ -145,23 +145,9 @@ stopBtn.addEventListener('click', async () => {
 
 // Chat history functions
 function addChatMessage(role, content, timestamp) {
-  const message = {
-    role: role,
-    content: content,
-    timestamp: timestamp || new Date().toISOString()
-  }
-  
+  const message = createChatMessage(role, content, timestamp)
   console.log("updating with", message)
-  // Add to history array
-  chatHistory.push(message)
-  
-  // Keep only last 200 messages
-  if (chatHistory.length > MAX_CHAT_HISTORY) {
-    chatHistory = chatHistory.slice(-MAX_CHAT_HISTORY)
-  }
-  
-  // Update display
-  updateChatHistoryDisplay()
+  chatLog.addMessage(message)
 }
 
 function formatTime(isoString) {
@@ -181,10 +167,8 @@ function updateChatHistoryDisplay() {
   // Clear existing messages
   chatMessages.innerHTML = ''
   
-  // Sort messages by timestamp
-  const sortedMessages = [...chatHistory].sort((a, b) => 
-    new Date(a.timestamp) - new Date(b.timestamp)
-  )
+  // Get messages from ChatLog (already sorted)
+  const sortedMessages = chatLog.getMessages()
   
   // Add each message to display
   sortedMessages.forEach(message => {

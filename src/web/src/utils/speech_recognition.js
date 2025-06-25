@@ -99,11 +99,11 @@ class SpeechRecognition {
       console.log('Transcription:', data.transcription);
       
       // Call the transcription callback
-      this.onTranscription(data.transcription);
+      this.onTranscription("user", data.transcription);
       
     } catch (err) {
       console.error('Upload error:', err);
-      this.onTranscription('Error: Could not process audio');
+      this.onTranscription("user", 'Error: Could not process audio');
     }
     
     // Reset for next speech segment

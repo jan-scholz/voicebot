@@ -1,6 +1,7 @@
 import './style.css'
 import './styles/status.css'
 import './styles/sidebar.css'
+import './styles/chat_history.css'
 import { sidebarHTML } from './html/sidebar.js'
 import { StateManager, UIObserver } from './utils/state_manager.js';
 import { SpeechRecognition } from './utils/speech_recognition.js';
@@ -20,9 +21,14 @@ document.querySelector('#app').innerHTML = `
           <span class="status-text" id="status-text">Ready</span>
         </div>
       </div>
-      <div class="transcription-area" id="transcription-area">
-        <h3>Transcriptions:</h3>
-        <div class="transcription-list" id="transcription-list"></div>
+      <div class="chat-history" id="chat-history">
+        <div class="chat-header" id="chat-header">
+          <h3>Chat History</h3>
+          <span class="chat-arrow">▼</span>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+          <!-- Messages will be added here dynamically -->
+        </div>
       </div>
       <p class="read-the-docs">
         Interactive Audiobot - Click to interact
@@ -41,9 +47,13 @@ const stateManager = new StateManager();
 const uiObserver = new UIObserver();
 stateManager.subscribe(uiObserver);
 
+// Chat history management
+let chatHistory = []
+const MAX_CHAT_HISTORY = 200
 
 // Speech recognition
-const speechRecognition = new SpeechRecognition(stateManager, addTranscriptionToUI);
+// const speechRecognition = new SpeechRecognition(stateManager, addTranscriptionToUI);
+const speechRecognition = new SpeechRecognition(stateManager, addChatMessage)
 
 // UI elements
 const startListeningBtn = document.querySelector('#start-listening');
@@ -133,6 +143,96 @@ stopBtn.addEventListener('click', async () => {
   console.log('Recording stopped');
 });
 
+// Chat history functions
+function addChatMessage(role, content, timestamp) {
+  const message = {
+    role: role,
+    content: content,
+    timestamp: timestamp || new Date().toISOString()
+  }
+  
+  console.log("updating with", message)
+  // Add to history array
+  chatHistory.push(message)
+  
+  // Keep only last 200 messages
+  if (chatHistory.length > MAX_CHAT_HISTORY) {
+    chatHistory = chatHistory.slice(-MAX_CHAT_HISTORY)
+  }
+  
+  // Update display
+  updateChatHistoryDisplay()
+}
+
+function formatTime(isoString) {
+  const date = new Date(isoString)
+  return date.toLocaleTimeString('en-US', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true 
+  })
+}
+
+function updateChatHistoryDisplay() {
+  const chatMessages = document.querySelector('#chat-messages')
+  if (!chatMessages) return
+  
+  // Clear existing messages
+  chatMessages.innerHTML = ''
+  
+  // Sort messages by timestamp
+  const sortedMessages = [...chatHistory].sort((a, b) => 
+    new Date(a.timestamp) - new Date(b.timestamp)
+  )
+  
+  // Add each message to display
+  sortedMessages.forEach(message => {
+    const messageElement = document.createElement('div')
+    messageElement.className = `chat-message chat-message-${message.role}`
+    
+    const contentElement = document.createElement('div')
+    contentElement.className = 'chat-message-content'
+    contentElement.textContent = message.content
+    
+    const timeElement = document.createElement('div')
+    timeElement.className = 'chat-message-time'
+    timeElement.textContent = formatTime(message.timestamp)
+    
+    messageElement.appendChild(contentElement)
+    messageElement.appendChild(timeElement)
+    chatMessages.appendChild(messageElement)
+  })
+  
+  // Scroll to bottom
+  chatMessages.scrollTop = chatMessages.scrollHeight
+}
+
+// Setup chat history collapsible functionality
+function setupChatHistoryCollapse() {
+  const chatHeader = document.querySelector('#chat-header')
+  const chatHistory = document.querySelector('#chat-history')
+  const chatMessages = document.querySelector('#chat-messages')
+  const chatArrow = document.querySelector('.chat-arrow')
+  
+  if (!chatHeader || !chatHistory || !chatMessages || !chatArrow) {
+    console.log('Chat history elements not found')
+    return
+  }
+  
+  chatHeader.addEventListener('click', () => {
+    chatHistory.classList.toggle('collapsed')
+    
+    if (chatHistory.classList.contains('collapsed')) {
+      chatArrow.textContent = '▶'
+      console.log('Chat history collapsed')
+    } else {
+      chatArrow.textContent = '▼'
+      console.log('Chat history expanded')
+    }
+  })
+}
+
 // Setup sidebar toggle functionality
 const sidebar = document.querySelector('#sidebar');
 const sidebarToggle = document.querySelector('#sidebar-toggle');
@@ -145,6 +245,7 @@ async function initApp() {
   console.log('Application initializing...');
   await setupAudioContext();
   stateManager.updateCurrentState('idle');
+  setupChatHistoryCollapse()
 
   // sidebar
   sidebarUtils.setupCollapsibleSections();

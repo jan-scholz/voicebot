@@ -150,11 +150,6 @@ const stateManager = new StateManager();
 const uiObserver = new UIObserver();
 stateManager.subscribe(uiObserver);
 
-// sidebar
-let speechEnabled = true
-let speechSettings = {
-  voice: 'en-US-JennyMultilingualNeural'
-}
 
 // Speech recognition
 const speechRecognition = new SpeechRecognition(stateManager, addTranscriptionToUI);
@@ -263,10 +258,9 @@ async function initApp() {
   // sidebar
   sidebarUtils.setupCollapsibleSections();
   await sidebarUtils.loadProfiles()
-  // setupChatControls()
-  // setupSpeechControls()
-  // setupWakeWordControls()
-
+  sidebarUtils.setupChatControls(stateManager)
+  sidebarUtils.setupSpeechControls(stateManager)
+  // sidebarUtils.setupWakeWordControls()
 }
 
 initApp();

@@ -208,7 +208,7 @@ function setupProfileChangeHandler() {
 }
 
 // Send chat message to backend
-async function sendChatMessage(content) {
+async function sendChatMessage(content, speechEnabled) {
   try {
     const userTimestamp = new Date().toISOString()
     
@@ -239,7 +239,6 @@ async function sendChatMessage(content) {
     // Add assistant response to chat history
     addChatMessage('assistant', data.content, data.timestamp || new Date().toISOString())
     
-    // Synthesize and play speech if enabled
     if (speechEnabled) {
       const audioUrl = await synthesizeSpeech(data)
       if (audioUrl) {
@@ -257,7 +256,7 @@ async function sendChatMessage(content) {
 }
 
 // Populate voice dropdown with available voices
-function populateVoiceDropdown() {
+function populateVoiceDropdown(stateManager) {
   const voiceSelect = document.querySelector('#voice-select')
   
   if (!voiceSelect) {
@@ -277,7 +276,8 @@ function populateVoiceDropdown() {
   })
   
   // Set default voice
-  voiceSelect.value = speechSettings.voice
+  const state = stateManager.getState();
+  voiceSelect.value = state.speechSettings.voice
   addDebugLog(`Populated voice dropdown with ${availableVoices.length} voices`)
 }
 
@@ -311,7 +311,7 @@ async function updateVoiceConfig(voiceName) {
 }
 
 // Setup speech synthesis controls
-function setupSpeechControls() {
+function setupSpeechControls(stateManager) {
   const speechToggle = document.querySelector('#speech-toggle')
   const voiceSelect = document.querySelector('#voice-select')
   
@@ -321,18 +321,20 @@ function setupSpeechControls() {
   }
   
   // Populate voice dropdown
-  populateVoiceDropdown()
+  populateVoiceDropdown(stateManager)
   
   // Initialize settings from current control state
-  speechEnabled = speechToggle.checked
-  speechSettings.voice = voiceSelect.value
+  stateManager.setSpeechEnabled(speechToggle.checked)
+  stateManager.updateVoice(voiceSelect.value)
   
   // Set initial voice configuration on backend
-  updateVoiceConfig(speechSettings.voice)
+  const state = stateManager.getState();
+  updateVoiceConfig(state.speechSettings.voice)
   
   // Speech toggle handler
   speechToggle.addEventListener('change', (event) => {
-    speechEnabled = event.target.checked
+    stateManager.setSpeechEnabled(event.target.checked)
+    const speechEnabled = event.target.checked;
     addDebugLog(`Speech output ${speechEnabled ? 'enabled' : 'disabled'}`)
     
     // Stop any playing audio if speech is disabled
@@ -344,14 +346,15 @@ function setupSpeechControls() {
   // Voice selection handler
   voiceSelect.addEventListener('change', async (event) => {
     const newVoice = event.target.value
-    speechSettings.voice = newVoice
-    addDebugLog(`Voice changed to: ${speechSettings.voice}`)
+    stateManager.updateVoice(newVoice)
+    addDebugLog(`Voice changed to: ${newVoice}`)
     
     // Update backend configuration
     const success = await updateVoiceConfig(newVoice)
     if (!success) {
       // Revert to previous voice if update failed
-      voiceSelect.value = speechSettings.voice
+      const state = stateManager.getState();
+      voiceSelect.value = state.speechSettings.voice
       addDebugLog('Voice update failed, reverted to previous selection')
     }
   })
@@ -400,7 +403,7 @@ function setWakeWordDetected(detected) {
 }
 
 // Setup chat message functionality
-function setupChatControls() {
+function setupChatControls(stateManager) {
   const chatInput = document.querySelector('#chat-input')
   const sendButton = document.querySelector('#send-chat-btn')
   
@@ -418,7 +421,8 @@ function setupChatControls() {
     sendButton.textContent = 'Sending...'
     chatInput.disabled = true
     
-    const response = await sendChatMessage(message)
+    const state = stateManager.getState();
+    const response = await sendChatMessage(message, state.speechEnabled)
     
     sendButton.disabled = false
     sendButton.textContent = 'Send'
@@ -449,15 +453,4 @@ function addDebugLog(message) {
   }
 }
 
-export { setupCollapsibleSections, addDebugLog, fetchProfileNames, populateProfileDropdown, loadProfiles }
-
-// fetchPromptText
-// savePromptText
-// setupProfileChangeHandler
-// sendChatMessage
-// populateVoiceDropdown
-// updateVoiceConfig
-// setupSpeechControls
-// setupWakeWordControls
-// setWakeWordDetected
-// setupChatControls
+export { setupCollapsibleSections, addDebugLog, loadProfiles, setupChatControls, setupSpeechControls, setupWakeWordControls }

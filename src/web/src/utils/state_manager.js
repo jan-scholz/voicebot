@@ -3,7 +3,9 @@ class StateManager {
   constructor() {
     this.state = {
       currentState: 'idle',
-      isRecording: false
+      isRecording: false,
+      speechEnabled: true,
+      speechSettings: { voice: 'en-US-JennyMultilingualNeural' }
     };
     this.observers = [];
   }
@@ -41,6 +43,19 @@ class StateManager {
 
   setRecording(isRecording) {
     this.setState({ isRecording });
+  }
+
+  setSpeechEnabled(speechEnabled) {
+    this.setState({ speechEnabled });
+  }
+
+  setSpeechSettings(speechSettings) {
+    this.setState({ speechSettings });
+  }
+
+  updateVoice(voice) {
+    const newSpeechSettings = { ...this.state.speechSettings, voice };
+    this.setState({ speechSettings: newSpeechSettings });
   }
 }
 

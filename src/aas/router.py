@@ -18,7 +18,7 @@ from fastapi import (
     WebSocket,
     WebSocketDisconnect,
 )
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from openai import AzureOpenAI
 
 from aas.models import ChatMessage, Prompt, SpeechConfigMessage

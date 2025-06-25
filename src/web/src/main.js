@@ -260,7 +260,7 @@ async function initApp() {
   await sidebarUtils.loadProfiles()
   sidebarUtils.setupChatControls(stateManager)
   sidebarUtils.setupSpeechControls(stateManager)
-  // sidebarUtils.setupWakeWordControls()
+  sidebarUtils.setupWakeWordControls(stateManager)
 }
 
 initApp();

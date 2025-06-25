@@ -5,7 +5,8 @@ class StateManager {
       currentState: 'idle',
       isRecording: false,
       speechEnabled: true,
-      speechSettings: { voice: 'en-US-JennyMultilingualNeural' }
+      speechSettings: { voice: 'en-US-JennyMultilingualNeural' },
+      wakeWordDetected: false
     };
     this.observers = [];
   }
@@ -56,6 +57,10 @@ class StateManager {
   updateVoice(voice) {
     const newSpeechSettings = { ...this.state.speechSettings, voice };
     this.setState({ speechSettings: newSpeechSettings });
+  }
+
+  setWakeWordDetected(wakeWordDetected) {
+    this.setState({ wakeWordDetected });
   }
 }
 

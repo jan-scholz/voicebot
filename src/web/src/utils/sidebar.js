@@ -1,3 +1,6 @@
+// Audio playback state
+let currentAudio = null;
+
 // Available voices for selection
 const availableVoices = [
   'en-US-JennyMultilingualNeural',
@@ -208,12 +211,13 @@ function setupProfileChangeHandler() {
 }
 
 // Send chat message to backend
-async function sendChatMessage(content, speechEnabled) {
+async function sendChatMessage(content, stateManager) {
   try {
     const userTimestamp = new Date().toISOString()
     
     // Add user message to chat history immediately
-    addChatMessage('user', content, userTimestamp)
+    // TODO: 
+    // addChatMessage('user', content, userTimestamp)
     
     addDebugLog(`Sending chat message: ${content}`)
     const response = await fetch('/chat', {
@@ -237,12 +241,16 @@ async function sendChatMessage(content, speechEnabled) {
     console.log('Chat response:', data)
     
     // Add assistant response to chat history
-    addChatMessage('assistant', data.content, data.timestamp || new Date().toISOString())
+    // TODO: 
+    // addChatMessage('assistant', data.content, data.timestamp || new Date().toISOString())
     
-    if (speechEnabled) {
+    const state = stateManager.getState();
+    if (state.speechEnabled) {
       const audioUrl = await synthesizeSpeech(data)
       if (audioUrl) {
         playAudio(audioUrl)
+      } else {
+        addDebugLog('Skipping synthesis, speech disabled')
       }
     }
     
@@ -361,7 +369,7 @@ function setupSpeechControls(stateManager) {
 }
 
 // Setup manual wake word controls
-function setupWakeWordControls() {
+function setupWakeWordControls(stateManager) {
   const wakeWordToggle = document.querySelector('#wakeword-toggle')
   
   if (!wakeWordToggle) {
@@ -370,35 +378,24 @@ function setupWakeWordControls() {
   }
  
   // Initialize wake word state from control state
-  wakeWordDetected = wakeWordToggle.checked
+  stateManager.setWakeWordDetected(wakeWordToggle.checked)
   
   // Wake word toggle handler
   wakeWordToggle.addEventListener('change', (event) => {
-    const allowedStates = [
-      AppState.LISTENING_FOR_WAKEWORD,
-      AppState.LISTENING,
-      AppState.PAUSED
-    ];
-
-    if (allowedStates.includes(currentState)) {
-      setWakeWordDetected(event.target.checked);
-      addDebugLog(`Wake word detection ${wakeWordDetected ? 'detected' : 'not_detected'}`);
-    } else {
-      // Prevent toggle and revert it to match actual state
-      event.target.checked = wakeWordDetected;
-      addDebugLog(`Toggle blocked: Wake word state change not allowed in ${currentState}`);
-    }
+      setWakeWordDetected(event.target.checked, stateManager);
+      const wakeWordDetected = event.target.checked;
+      addDebugLog(`Wake word ${wakeWordDetected ? 'detected' : 'not_detected'}`);
   })
 }
 
 // Function to programmatically set wake word state (for future use)
-function setWakeWordDetected(detected) {
-  wakeWordDetected = detected
+function setWakeWordDetected(detected, stateManager) {
+  stateManager.setWakeWordDetected(detected)
   const wakeWordToggle = document.querySelector('#wakeword-toggle')
   if (wakeWordToggle) {
     wakeWordToggle.checked = detected
   }
-  updateListeningState()
+  // TODO: updateListeningState()
   addDebugLog(`Wake word set to ${detected ? 'detected' : 'not_detected'} programmatically`);
 }
 
@@ -421,8 +418,7 @@ function setupChatControls(stateManager) {
     sendButton.textContent = 'Sending...'
     chatInput.disabled = true
     
-    const state = stateManager.getState();
-    const response = await sendChatMessage(message, state.speechEnabled)
+    const response = await sendChatMessage(message, stateManager)
     
     sendButton.disabled = false
     sendButton.textContent = 'Send'
@@ -451,6 +447,84 @@ function addDebugLog(message) {
     debugLog.appendChild(logEntry)
     debugLog.scrollTop = debugLog.scrollHeight
   }
+}
+
+// Speech synthesis functions
+async function synthesizeSpeech(messageData) {
+  try {
+    addDebugLog(`Synthesizing speech: "${messageData.content.substring(0, 50)}..."`)
+    
+    const response = await fetch('/text2speech', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(messageData)
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+    }
+    
+    const audioBlob = await response.blob()
+    const audioUrl = URL.createObjectURL(audioBlob)
+    
+    addDebugLog('Speech synthesis completed successfully')
+    return audioUrl
+    
+  } catch (error) {
+    addDebugLog(`Speech synthesis failed: ${error.message}`)
+    console.error('Error synthesizing speech:', error)
+    return null
+  }
+}
+
+function playAudio(audioUrl) {
+  if (!audioUrl) return
+  
+  // Stop any currently playing audio
+  stopAudio()
+  
+  currentAudio = new Audio(audioUrl)
+  
+  currentAudio.onloadstart = () => {
+    addDebugLog('Audio loading started')
+  }
+  
+  currentAudio.onplay = () => {
+    addDebugLog('Audio playback started')
+  }
+  
+  currentAudio.onended = () => {
+    addDebugLog('Audio playback completed')
+    cleanupAudio()
+  }
+  
+  currentAudio.onerror = (error) => {
+    addDebugLog(`Audio playback error: ${error.message || 'Unknown error'}`)
+    cleanupAudio()
+  }
+  
+  currentAudio.play().catch(error => {
+    addDebugLog(`Failed to play audio: ${error.message}`)
+    cleanupAudio()
+  })
+}
+
+function stopAudio() {
+  if (currentAudio) {
+    currentAudio.pause()
+    currentAudio.currentTime = 0
+    cleanupAudio()
+    addDebugLog('Audio playback stopped')
+  }
+}
+
+function cleanupAudio() {
+  if (currentAudio && currentAudio.src) {
+    URL.revokeObjectURL(currentAudio.src)
+  }
+  currentAudio = null
 }
 
 export { setupCollapsibleSections, addDebugLog, loadProfiles, setupChatControls, setupSpeechControls, setupWakeWordControls }

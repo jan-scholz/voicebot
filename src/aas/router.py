@@ -110,7 +110,7 @@ async def chat(chat_message: ChatMessage):
 
 
 @router.post("/text2speech")
-async def chat(chat_message: ChatMessage):
+async def text2speech(chat_message: ChatMessage):
     try:
         print(f"/text2speech {chat_message=}")
         # synthesizer.set_voice("en-US-GuyNeural")
@@ -121,7 +121,7 @@ async def chat(chat_message: ChatMessage):
 
 
 @router.post("/speechconfig")
-async def chat(config: SpeechConfigMessage):
+async def speechconfig(config: SpeechConfigMessage):
     try:
         print(f"/speechconfig{config=}")
         synthesizer.set_voice(config.voice_name)

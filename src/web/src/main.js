@@ -225,7 +225,7 @@ async function initApp() {
   // sidebar
   sidebarUtils.setupCollapsibleSections();
   await sidebarUtils.loadProfiles()
-  sidebarUtils.setupChatControls(stateManager)
+  sidebarUtils.setupChatControls(stateManager, chatLog)
   sidebarUtils.setupSpeechControls(stateManager)
   sidebarUtils.setupWakeWordControls(stateManager)
 }

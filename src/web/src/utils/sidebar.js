@@ -211,13 +211,17 @@ function setupProfileChangeHandler() {
 }
 
 // Send chat message to backend
-async function sendChatMessage(content, stateManager) {
+async function sendChatMessage(content, stateManager, chatLog) {
   try {
     const userTimestamp = new Date().toISOString()
     
     // Add user message to chat history immediately
-    // TODO: 
-    // addChatMessage('user', content, userTimestamp)
+    const userMessage = {
+      role: 'user',
+      content: content,
+      timestamp: userTimestamp
+    }
+    chatLog.addMessage(userMessage)
     
     addDebugLog(`Sending chat message: ${content}`)
     const response = await fetch('/chat', {
@@ -241,8 +245,12 @@ async function sendChatMessage(content, stateManager) {
     console.log('Chat response:', data)
     
     // Add assistant response to chat history
-    // TODO: 
-    // addChatMessage('assistant', data.content, data.timestamp || new Date().toISOString())
+    const assistantMessage = {
+      role: 'assistant',
+      content: data.content,
+      timestamp: data.timestamp || new Date().toISOString()
+    }
+    chatLog.addMessage(assistantMessage)
     
     const state = stateManager.getState();
     if (state.speechEnabled) {
@@ -400,7 +408,7 @@ function setWakeWordDetected(detected, stateManager) {
 }
 
 // Setup chat message functionality
-function setupChatControls(stateManager) {
+function setupChatControls(stateManager, chatLog) {
   const chatInput = document.querySelector('#chat-input')
   const sendButton = document.querySelector('#send-chat-btn')
   
@@ -418,7 +426,7 @@ function setupChatControls(stateManager) {
     sendButton.textContent = 'Sending...'
     chatInput.disabled = true
     
-    const response = await sendChatMessage(message, stateManager)
+    const response = await sendChatMessage(message, stateManager, chatLog)
     
     sendButton.disabled = false
     sendButton.textContent = 'Send'

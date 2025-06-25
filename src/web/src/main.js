@@ -1,8 +1,6 @@
 import './style.css'
 import './styles/status.css'
 import './styles/sidebar.css'
-import javascriptLogo from './javascript.svg'
-import viteLogo from '/vite.svg'
 import { StateManager, UIObserver } from './utils/state_manager.js';
 import { SpeechRecognition } from './utils/speech_recognition.js';
 import * as sidebarUtils from './utils/sidebar.js';

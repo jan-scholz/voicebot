@@ -1,5 +1,4 @@
-// Audio playback state
-let currentAudio = null;
+// Audio playback is now managed by AudioDeviceManager
 
 // Available voices for selection
 const availableVoices = [
@@ -211,7 +210,7 @@ function setupProfileChangeHandler() {
 }
 
 // Send chat message to backend
-async function sendChatMessage(content, stateManager, chatLog) {
+async function sendChatMessage(content, stateManager, chatLog, audioDeviceManager) {
   try {
     const userTimestamp = new Date().toISOString()
     
@@ -256,7 +255,7 @@ async function sendChatMessage(content, stateManager, chatLog) {
     if (state.speechEnabled) {
       const audioUrl = await synthesizeSpeech(data)
       if (audioUrl) {
-        playAudio(audioUrl)
+        audioDeviceManager.startPlayback(audioUrl)
       } else {
         addDebugLog('Skipping synthesis, speech disabled')
       }
@@ -355,7 +354,7 @@ function setupSpeechControls(stateManager) {
     
     // Stop any playing audio if speech is disabled
     if (!speechEnabled) {
-      stopAudio()
+      audioDeviceManager.stopPlayback()
     }
   })
   
@@ -408,7 +407,7 @@ function setWakeWordDetected(detected, stateManager) {
 }
 
 // Setup chat message functionality
-function setupChatControls(stateManager, chatLog) {
+function setupChatControls(stateManager, chatLog, audioDeviceManager) {
   const chatInput = document.querySelector('#chat-input')
   const sendButton = document.querySelector('#send-chat-btn')
   
@@ -426,7 +425,7 @@ function setupChatControls(stateManager, chatLog) {
     sendButton.textContent = 'Sending...'
     chatInput.disabled = true
     
-    const response = await sendChatMessage(message, stateManager, chatLog)
+    const response = await sendChatMessage(message, stateManager, chatLog, audioDeviceManager)
     
     sendButton.disabled = false
     sendButton.textContent = 'Send'
@@ -487,52 +486,18 @@ async function synthesizeSpeech(messageData) {
   }
 }
 
+// Audio playback functions are now handled by AudioDeviceManager
+// These functions are kept for backward compatibility but should be deprecated
 function playAudio(audioUrl) {
-  if (!audioUrl) return
-  
-  // Stop any currently playing audio
-  stopAudio()
-  
-  currentAudio = new Audio(audioUrl)
-  
-  currentAudio.onloadstart = () => {
-    addDebugLog('Audio loading started')
-  }
-  
-  currentAudio.onplay = () => {
-    addDebugLog('Audio playback started')
-  }
-  
-  currentAudio.onended = () => {
-    addDebugLog('Audio playback completed')
-    cleanupAudio()
-  }
-  
-  currentAudio.onerror = (error) => {
-    addDebugLog(`Audio playback error: ${error.message || 'Unknown error'}`)
-    cleanupAudio()
-  }
-  
-  currentAudio.play().catch(error => {
-    addDebugLog(`Failed to play audio: ${error.message}`)
-    cleanupAudio()
-  })
+  console.warn('playAudio() is deprecated. Use AudioDeviceManager.startPlayback() instead.');
 }
 
 function stopAudio() {
-  if (currentAudio) {
-    currentAudio.pause()
-    currentAudio.currentTime = 0
-    cleanupAudio()
-    addDebugLog('Audio playback stopped')
-  }
+  console.warn('stopAudio() is deprecated. Use AudioDeviceManager.stopPlayback() instead.');
 }
 
 function cleanupAudio() {
-  if (currentAudio && currentAudio.src) {
-    URL.revokeObjectURL(currentAudio.src)
-  }
-  currentAudio = null
+  console.warn('cleanupAudio() is deprecated. AudioDeviceManager handles cleanup automatically.');
 }
 
 export { setupCollapsibleSections, addDebugLog, loadProfiles, setupChatControls, setupSpeechControls, setupWakeWordControls, sendChatMessage }

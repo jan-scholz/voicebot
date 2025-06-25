@@ -6,7 +6,12 @@ class StateManager {
       isRecording: false,
       speechEnabled: true,
       speechSettings: { voice: 'en-US-JennyMultilingualNeural' },
-      wakeWordDetected: false
+      wakeWordDetected: false,
+      audioDeviceStatus: {
+        recordingInitialized: false,
+        playbackActive: false,
+        devicesBusy: false
+      }
     };
     this.observers = [];
   }
@@ -62,6 +67,22 @@ class StateManager {
   setWakeWordDetected(wakeWordDetected) {
     this.setState({ wakeWordDetected });
   }
+
+  setAudioDeviceStatus(audioDeviceStatus) {
+    this.setState({ audioDeviceStatus: { ...this.state.audioDeviceStatus, ...audioDeviceStatus } });
+  }
+
+  setRecordingInitialized(recordingInitialized) {
+    this.setAudioDeviceStatus({ recordingInitialized });
+  }
+
+  setPlaybackActive(playbackActive) {
+    this.setAudioDeviceStatus({ playbackActive });
+  }
+
+  setDevicesBusy(devicesBusy) {
+    this.setAudioDeviceStatus({ devicesBusy });
+  }
 }
 
 // UI Observer to handle state changes
@@ -95,6 +116,14 @@ class UIObserver {
       case 'processing':
         this.statusText.textContent = 'Processing...';
         this.statusText.className = 'status-text processing';
+        break;
+      case 'playback':
+        this.statusText.textContent = 'Playing response...';
+        this.statusText.className = 'status-text playback';
+        break;
+      case 'error':
+        this.statusText.textContent = 'Audio error';
+        this.statusText.className = 'status-text error';
         break;
     }
   }

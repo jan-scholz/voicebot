@@ -8,6 +8,7 @@ import { SpeechRecognition } from './utils/speech_recognition.js';
 import * as sidebarUtils from './utils/sidebar.js';
 import { sendChatMessage } from './utils/sidebar.js';
 import { ChatLog, createChatMessage, formatTime } from './utils/chat_history.js';
+import { AudioDeviceManager } from './utils/audio_device_manager.js';
 
 document.querySelector('#app').innerHTML = `
   <div class="main-container">
@@ -40,14 +41,13 @@ document.querySelector('#app').innerHTML = `
   </div>
 `
 
-// Audio recording state
-let audioContext;
-let recorderNode;
-
 // State management
 const stateManager = new StateManager();
 const uiObserver = new UIObserver();
 stateManager.subscribe(uiObserver);
+
+// Audio device management
+const audioDeviceManager = new AudioDeviceManager(stateManager);
 
 // Chat history management
 const chatLog = new ChatLog(200, updateChatHistoryDisplay);
@@ -56,7 +56,7 @@ const chatLog = new ChatLog(200, updateChatHistoryDisplay);
 // const speechRecognition = new SpeechRecognition(stateManager, addTranscriptionToUI);
 const speechRecognition = new SpeechRecognition(stateManager, (role, content, timestamp) => {
   if (role === 'user') {
-    sendChatMessage(content, stateManager, chatLog)
+    sendChatMessage(content, stateManager, chatLog, audioDeviceManager)
   }
 })
 
@@ -66,10 +66,7 @@ const stopBtn = document.querySelector('#stop');
 const statusText = document.querySelector('#status-text');
 const transcriptionList = document.querySelector('#transcription-list');
 
-async function setupAudioContext() {
-  audioContext = new AudioContext({ sampleRate: 16000 });
-  await audioContext.audioWorklet.addModule('/audio-worklet-processor.js');
-}
+// Audio setup is now handled by AudioDeviceManager
 
 // Add transcription to UI
 function addTranscriptionToUI(transcription) {
@@ -86,64 +83,36 @@ function addTranscriptionToUI(transcription) {
 startListeningBtn.addEventListener('click', async () => {
   startListeningBtn.disabled = true;
   stopBtn.disabled = false;
-  stateManager.setRecording(true);
   
-  // Get mic stream
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  const success = await audioDeviceManager.startRecording((audioData) => {
+    speechRecognition.addAudioChunk(audioData);
+    speechRecognition.handleVolumeLevel(audioData.volumeLevel, audioData.timestamp);
+  });
   
-  if (!audioContext) {
-    console.error('AudioContext not initialized');
-    return;
+  if (!success) {
+    // Re-enable buttons if recording failed
+    startListeningBtn.disabled = false;
+    stopBtn.disabled = true;
+    console.error('Failed to start recording');
+  } else {
+    console.log('Recording started successfully');
   }
-  
-  const source = audioContext.createMediaStreamSource(stream);
-  audioContext.sourceNode = source; // Store reference for cleanup
-  
-  // Create AudioWorkletNode to capture raw PCM
-  recorderNode = new AudioWorkletNode(audioContext, 'pcm-recorder-processor');
-  
-  recorderNode.port.onmessage = (event) => {
-    const isRecording = stateManager.getState().isRecording;
-    if (!isRecording) return;
-    speechRecognition.addAudioChunk(event.data);
-    speechRecognition.handleVolumeLevel(event.data.volumeLevel, event.data.timestamp);
-  };
-  
-  source.connect(recorderNode).connect(audioContext.destination);
-  
-  stateManager.updateCurrentState('listening');
-  console.log('Continuous recording started with pause detection');
 });
 
 stopBtn.addEventListener('click', async () => {
   startListeningBtn.disabled = false;
   stopBtn.disabled = true;
-  stateManager.setRecording(false);
-  
-  if (!audioContext) {
-    console.error('AudioContext not initialized');
-    return;
-  }
   
   // Send any remaining audio before stopping
   if (speechRecognition.audioChunks.length > 0 && speechRecognition.speechStartTime) {
     await speechRecognition.sendCurrentAudio();
   }
   
-  // Clean up audio nodes
-  if (recorderNode) {
-    recorderNode.disconnect();
-    recorderNode = null;
-  }
+  // Stop recording via AudioDeviceManager
+  await audioDeviceManager.stopRecording();
   
-  // Stop all tracks in the stream to release the microphone
-  const tracks = audioContext.sourceNode?.mediaStream?.getTracks();
-  if (tracks) {
-    tracks.forEach(track => track.stop());
-  }
-  
+  // Reset speech recognition state
   speechRecognition.resetSpeechDetection();
-  stateManager.updateCurrentState('idle');
   
   console.log('Recording stopped');
 });
@@ -223,14 +192,30 @@ sidebarToggle.addEventListener('click', () => {
 
 async function initApp() {
   console.log('Application initializing...');
-  await setupAudioContext();
+  
+  // Initialize audio device manager
+  await audioDeviceManager.initializeRecording();
   stateManager.updateCurrentState('idle');
   setupChatHistoryCollapse()
+
+  // Add cleanup on page unload
+  window.addEventListener('beforeunload', async () => {
+    console.log('Page unloading, cleaning up audio devices...');
+    await audioDeviceManager.cleanup();
+  });
+
+  // Add error handling for unhandled audio errors
+  window.addEventListener('error', (event) => {
+    if (event.error && event.error.name === 'NotAllowedError') {
+      console.error('Microphone access denied:', event.error);
+      stateManager.updateCurrentState('error');
+    }
+  });
 
   // sidebar
   sidebarUtils.setupCollapsibleSections();
   await sidebarUtils.loadProfiles()
-  sidebarUtils.setupChatControls(stateManager, chatLog)
+  sidebarUtils.setupChatControls(stateManager, chatLog, audioDeviceManager)
   sidebarUtils.setupSpeechControls(stateManager)
   sidebarUtils.setupWakeWordControls(stateManager)
 }

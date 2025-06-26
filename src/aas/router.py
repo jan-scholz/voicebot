@@ -83,18 +83,16 @@ async def process_audio(file: UploadFile = File(...)):
     try:
         # Load audio into NumPy array
         audio_bytes = await file.read()
-        print(len(audio_bytes))
+        print(f"[STT]: {len(audio_bytes)} bytes received")
 
         full_text = speech_recognizer.transcribe(audio_bytes)
-        # audio_data, sample_rate = sf.read(io.BytesIO(audio_bytes))
-
-        # Transcribe using faster-whisper
-        # segments, _info = model.transcribe(audio_data, language="en", beam_size=5)
-
-        # Combine all segments into full text
-        # full_text = " ".join([segment.text for segment in segments])
-        print("Transcription:", full_text)
+        if full_text:
+            print(
+                f"[SST]: Transcribed: {full_text[:40]}",
+                "..." if len(full_text) > 20 else "",
+            )
         return JSONResponse(content={"transcription": full_text})
+        # return TranscriptionMessage(content=full_text)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {e}")

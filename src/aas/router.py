@@ -111,7 +111,6 @@ async def chat(chat_message: ChatMessage):
 async def text2speech(chat_message: ChatMessage):
     try:
         print(f"/text2speech {chat_message=}")
-        # synthesizer.set_voice("en-US-GuyNeural")
         audio_stream = synthesizer.text_to_audio_stream(chat_message.content)
         return StreamingResponse(audio_stream, media_type="audio/wav")
     except Exception as e:

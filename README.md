@@ -5,7 +5,7 @@ This is a prototype for a bot that can understand spoken queries and responds wi
 The tech stack consists of a Vite frontend application that can be served via a FastAPI server inside a Docker container. The Docker container can be deployed to Azure App Service. The FastAPI server has various routes that the frontend can communicate with to send and receive audio data and other messages.
 
 
-## Installation
+## Installation - venv
 
 Create an initial virtual environment to boostrap with `hatch` and `uv`.
 
@@ -14,7 +14,24 @@ python3.12 -m venv .venv && \
 source .venv/bin/activate && \
 pip install hatch uv
 ```
+## Installation - [Devcontainer (VS Code)](https://code.visualstudio.com/docs/devcontainers/containers)
 
+A Dockerfile and .devcontainer directory is available. Ensure Docker Desktop is running and has enough space for building a container.
+- In command pallete (`Ctrl+Shift+p`) search for "Dev Containers: Reopen in Devcontainer"
+- Open a bash terminal below and follow the steps in the `Run` section
+
+If a devcontainer directory is not available, then create one using the 'Dockerfile' and the method below. 
+1. Open the project directory on VS Code
+2. In command pallete (`Ctrl+Shift+p`) search for "Dev Containers: Add Dev Container Configuration Files..."
+    - Select "Add configurations to workspace"
+    - Select "From 'Dockerfile'"
+    - Select "Python" and click OK
+    - Select "Keep Defaults" and click OK
+    - click OK without selecting the option fot the yaml
+
+This should build a devcontainer directory. Once built:
+- In command pallete (`Ctrl+Shift+p`) search for "Dev Containers: Reopen in Devcontainer"
+- Open a bash terminal below and follow the steps in the `Run` section
 
 ## Run
 
@@ -40,7 +57,6 @@ make run-docker
 
 ### Release
 
-Bump the version number of the python package.
 
 ```bash
 VERSION=0.5.0

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from pydantic import BaseModel, Field
@@ -12,7 +12,12 @@ class Prompt(BaseModel):
 class ChatMessage(BaseModel):
     role: str
     content: str
-    timestamp: datetime = Field(default_factory=datetime.now)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class TranscriptionMessage(BaseModel):
+    transcription: str
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class SpeechConfigMessage(BaseModel):

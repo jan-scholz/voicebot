@@ -75,6 +75,9 @@ class AudioDeviceManager {
 
       // Set up audio data handler
       this.recorderNode.port.onmessage = (event) => {
+        if (!this._messageCount) this._messageCount = 0;
+        this._messageCount++;
+        
         if (this.stateManager.getState().isRecording && !this.isPlaybackActive) {
           onAudioData(event.data);
         }
@@ -83,11 +86,43 @@ class AudioDeviceManager {
       // Connect audio graph
       this.sourceNode.connect(this.recorderNode).connect(this.audioContext.destination);
 
+      // Debug: Log audio context and connection info
+      console.log('Audio graph connected:', {
+        audioContextState: this.audioContext.state,
+        sampleRate: this.audioContext.sampleRate,
+        sourceNodeChannelCount: this.sourceNode.channelCount,
+        recorderNodeChannelCount: this.recorderNode.channelCount,
+        mediaStreamActive: this.mediaStream.active,
+        mediaStreamTracks: this.mediaStream.getTracks().map(track => ({
+          kind: track.kind,
+          enabled: track.enabled,
+          readyState: track.readyState
+        }))
+      });
+
+      // Ensure AudioContext is running (Chrome requirement)
+      if (this.audioContext.state === 'suspended') {
+        console.log('AudioContext suspended, resuming...');
+        await this.audioContext.resume();
+        console.log('AudioContext resumed, state:', this.audioContext.state);
+      }
+
       // Update state
       this.stateManager.setRecording(true);
       this.stateManager.updateCurrentState('listening');
 
       console.log('Audio recording started successfully');
+      
+      // Debug: Check if AudioWorklet is processing after a delay
+      setTimeout(() => {
+        console.log('AudioContext state after 2 seconds:', this.audioContext.state);
+        if (this._messageCount === 0) {
+          console.warn('No AudioWorklet messages received after 2 seconds - possible issue with audio processing');
+        } else {
+          console.log(`AudioWorklet is working: ${this._messageCount} messages received`);
+        }
+      }, 2000);
+      
       return true;
     } catch (error) {
       console.error('Failed to start recording:', error);

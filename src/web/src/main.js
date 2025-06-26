@@ -86,7 +86,12 @@ startListeningBtn.addEventListener('click', async () => {
   
   const success = await audioDeviceManager.startRecording((audioData) => {
     speechRecognition.addAudioChunk(audioData);
-    speechRecognition.handleVolumeLevel(audioData.volumeLevel, audioData.timestamp);
+    
+    // Handle different formats from different browsers
+    const volumeLevel = audioData && audioData.volumeLevel !== undefined ? audioData.volumeLevel : 0;
+    const timestamp = audioData && audioData.timestamp !== undefined ? audioData.timestamp : Date.now();
+    
+    speechRecognition.handleVolumeLevel(volumeLevel, timestamp);
   });
   
   if (!success) {

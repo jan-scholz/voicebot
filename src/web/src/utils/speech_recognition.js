@@ -81,7 +81,17 @@ class SpeechRecognition {
     
     try {
       // Extract audio data from chunks (removing volume info)
-      const audioOnlyChunks = this.audioChunks.map(chunk => chunk.audioData);
+      // Handle both formats: chunk.audioData (newer) and chunk (legacy)
+      const audioOnlyChunks = this.audioChunks.map(chunk => {
+        if (chunk.audioData) {
+          return chunk.audioData;
+        } else if (chunk instanceof Float32Array) {
+          return chunk;
+        } else {
+          console.warn('Unexpected chunk format:', chunk);
+          return new Float32Array(0);
+        }
+      });
       
       const float32Buffer = mergeBuffers(audioOnlyChunks);
       const wavBlob = createWAVBlob(float32Buffer, 16000);

@@ -141,6 +141,7 @@ async def get_prompt(profile_id: str):
     return prompt
 
 
+# TODO: rename to update_prompt/
 @router.post("/prompts/")
 async def update_prompt(prompt: Prompt):
     try:

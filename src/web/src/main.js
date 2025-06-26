@@ -53,7 +53,6 @@ const audioDeviceManager = new AudioDeviceManager(stateManager);
 const chatLog = new ChatLog(200, updateChatHistoryDisplay);
 
 // Speech recognition
-// const speechRecognition = new SpeechRecognition(stateManager, addTranscriptionToUI);
 const speechRecognition = new SpeechRecognition(stateManager, (role, content, timestamp) => {
   if (role === 'user') {
     sendChatMessage(content, stateManager, chatLog, audioDeviceManager)

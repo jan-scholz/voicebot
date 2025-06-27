@@ -209,12 +209,23 @@ class AudioDeviceManager {
         // Auto-resume recording if it was previously active
         if (wasRecording) {
           console.log('Auto-resuming recording after playback');
-          setTimeout(() => {
+          setTimeout(async () => {
             // Check if we should resume (user hasn't manually stopped)
             const currentState = this.stateManager.getState();
-            if (!currentState.isRecording) {
-              // Resume recording with the last audio handler
-              // Note: This requires the caller to re-establish the handler
+            if (!currentState.isRecording && window.currentAudioHandler) {
+              // Reset speech recognition state before resuming
+              if (window.speechRecognition) {
+                console.log('Resetting speech recognition state before resume');
+                window.speechRecognition.resetSpeechDetection();
+              }
+              
+              // Resume recording with the stored audio handler
+              const success = await this.startRecording(window.currentAudioHandler);
+              if (success) {
+                console.log('Recording resumed successfully after playback');
+              } else {
+                console.error('Failed to resume recording after playback');
+              }
             }
           }, 500);
         }
@@ -240,7 +251,10 @@ class AudioDeviceManager {
       this.currentAudio.pause();
       this.currentAudio.currentTime = 0;
       this.cleanupPlayback();
-      console.log('Audio playback stopped');
+      
+      // Clear the audio handler to prevent auto-resume when manually stopped
+      window.currentAudioHandler = null;
+      console.log('Audio playback stopped manually');
     }
   }
 

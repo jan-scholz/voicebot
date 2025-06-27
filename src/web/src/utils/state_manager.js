@@ -178,4 +178,27 @@ class DeviceImageObserver {
   }
 }
 
-export { StateManager, UIObserver, DeviceImageObserver };
+// Button Observer to handle button state changes
+class ButtonObserver {
+  constructor() {
+    this.startListeningBtn = document.querySelector('#start-listening');
+    this.stopBtn = document.querySelector('#stop');
+  }
+
+  update(state) {
+    this.updateButtonStates(state);
+  }
+
+  updateButtonStates(state) {
+    const { currentState, isRecording, audioDeviceStatus } = state;
+    const { playbackActive } = audioDeviceStatus;
+    
+    // Start Listening button: enabled only when idle
+    this.startListeningBtn.disabled = currentState !== 'idle';
+    
+    // Stop button: enabled when recording or during playback
+    this.stopBtn.disabled = !isRecording && !playbackActive;
+  }
+}
+
+export { StateManager, UIObserver, DeviceImageObserver, ButtonObserver };

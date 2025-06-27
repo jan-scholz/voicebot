@@ -3,7 +3,7 @@ import './styles/status.css'
 import './styles/sidebar.css'
 import './styles/chat_history.css'
 import { sidebarHTML } from './html/sidebar.js'
-import { StateManager, UIObserver, DeviceImageObserver } from './utils/state_manager.js';
+import { StateManager, UIObserver, DeviceImageObserver, ButtonObserver } from './utils/state_manager.js';
 import { SpeechRecognition } from './utils/speech_recognition.js';
 import * as sidebarUtils from './utils/sidebar.js';
 import { sendChatMessage } from './utils/sidebar.js';
@@ -45,8 +45,10 @@ document.querySelector('#app').innerHTML = `
 const stateManager = new StateManager();
 const uiObserver = new UIObserver();
 const deviceImageObserver = new DeviceImageObserver();
+const buttonObserver = new ButtonObserver();
 stateManager.subscribe(uiObserver);
 stateManager.subscribe(deviceImageObserver);
+stateManager.subscribe(buttonObserver);
 
 // Audio device management
 const audioDeviceManager = new AudioDeviceManager(stateManager);
@@ -60,6 +62,9 @@ const speechRecognition = new SpeechRecognition(stateManager, (role, content, ti
     sendChatMessage(content, stateManager, chatLog, audioDeviceManager)
   }
 })
+
+// Make speechRecognition globally accessible for AudioDeviceManager
+window.speechRecognition = speechRecognition;
 
 // UI elements
 const startListeningBtn = document.querySelector('#start-listening');
@@ -82,10 +87,11 @@ function addTranscriptionToUI(transcription) {
 }
 
 startListeningBtn.addEventListener('click', async () => {
-  startListeningBtn.disabled = true;
-  stopBtn.disabled = false;
+  // Reset speech recognition state for clean start
+  speechRecognition.resetSpeechDetection();
   
-  const success = await audioDeviceManager.startRecording((audioData) => {
+  // Start recording and let state management handle button states
+  window.currentAudioHandler = (audioData) => {
     speechRecognition.addAudioChunk(audioData);
     
     // Handle different formats from different browsers
@@ -93,34 +99,45 @@ startListeningBtn.addEventListener('click', async () => {
     const timestamp = audioData && audioData.timestamp !== undefined ? audioData.timestamp : Date.now();
     
     speechRecognition.handleVolumeLevel(volumeLevel, timestamp);
-  });
+  };
+  
+  const success = await audioDeviceManager.startRecording(window.currentAudioHandler);
   
   if (!success) {
-    // Re-enable buttons if recording failed
-    startListeningBtn.disabled = false;
-    stopBtn.disabled = true;
     console.error('Failed to start recording');
+    window.currentAudioHandler = null;
   } else {
     console.log('Recording started successfully');
   }
 });
 
 stopBtn.addEventListener('click', async () => {
-  startListeningBtn.disabled = false;
-  stopBtn.disabled = true;
+  const state = stateManager.getState();
   
-  // Send any remaining audio before stopping
-  if (speechRecognition.audioChunks.length > 0 && speechRecognition.speechStartTime) {
-    await speechRecognition.sendCurrentAudio();
+  // If recording, stop recording
+  if (state.isRecording) {
+    // Send any remaining audio before stopping
+    if (speechRecognition.audioChunks.length > 0 && speechRecognition.speechStartTime) {
+      await speechRecognition.sendCurrentAudio();
+    }
+    
+    // Stop recording via AudioDeviceManager
+    await audioDeviceManager.stopRecording();
+    
+    // Reset speech recognition state
+    speechRecognition.resetSpeechDetection();
+    
+    // Clear the audio handler
+    window.currentAudioHandler = null;
+    
+    console.log('Recording stopped by user');
   }
   
-  // Stop recording via AudioDeviceManager
-  await audioDeviceManager.stopRecording();
-  
-  // Reset speech recognition state
-  speechRecognition.resetSpeechDetection();
-  
-  console.log('Recording stopped');
+  // If playback is active, stop playback
+  if (state.audioDeviceStatus.playbackActive) {
+    audioDeviceManager.stopPlayback();
+    console.log('Playback stopped by user');
+  }
 });
 
 // Chat history functions

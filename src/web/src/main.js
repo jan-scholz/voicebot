@@ -3,7 +3,7 @@ import './styles/status.css'
 import './styles/sidebar.css'
 import './styles/chat_history.css'
 import { sidebarHTML } from './html/sidebar.js'
-import { StateManager, UIObserver, DeviceImageObserver, ButtonObserver } from './utils/state_manager.js';
+import { StateManager, UIObserver, DeviceImageObserver, ButtonObserver, WakeWordObserver } from './utils/state_manager.js';
 import { SpeechRecognition } from './utils/speech_recognition.js';
 import * as sidebarUtils from './utils/sidebar.js';
 import { sendChatMessage } from './utils/sidebar.js';
@@ -46,9 +46,11 @@ const stateManager = new StateManager();
 const uiObserver = new UIObserver();
 const deviceImageObserver = new DeviceImageObserver();
 const buttonObserver = new ButtonObserver();
+const wakeWordObserver = new WakeWordObserver();
 stateManager.subscribe(uiObserver);
 stateManager.subscribe(deviceImageObserver);
 stateManager.subscribe(buttonObserver);
+stateManager.subscribe(wakeWordObserver);
 
 // Audio device management
 const audioDeviceManager = new AudioDeviceManager(stateManager);

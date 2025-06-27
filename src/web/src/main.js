@@ -3,7 +3,7 @@ import './styles/status.css'
 import './styles/sidebar.css'
 import './styles/chat_history.css'
 import { sidebarHTML } from './html/sidebar.js'
-import { StateManager, UIObserver } from './utils/state_manager.js';
+import { StateManager, UIObserver, DeviceImageObserver } from './utils/state_manager.js';
 import { SpeechRecognition } from './utils/speech_recognition.js';
 import * as sidebarUtils from './utils/sidebar.js';
 import { sendChatMessage } from './utils/sidebar.js';
@@ -16,7 +16,7 @@ document.querySelector('#app').innerHTML = `
       <img src="/img/audiobot_logo.png" class="audiobot-logo" alt="Audiobot logo" />
     </div>
     <div class="content">
-      <img src="/img/device_disconnected.png" class="device-image" alt="Device disconnected" />
+      <img src="/img/device_paused.png" class="device-image" id="device-image" alt="Interactive audiobot device" />
       <div class="card">
         <button id="start-listening" type="button">Start Listening</button>
         <button id="stop" type="button">Stop</button>
@@ -44,7 +44,9 @@ document.querySelector('#app').innerHTML = `
 // State management
 const stateManager = new StateManager();
 const uiObserver = new UIObserver();
+const deviceImageObserver = new DeviceImageObserver();
 stateManager.subscribe(uiObserver);
+stateManager.subscribe(deviceImageObserver);
 
 // Audio device management
 const audioDeviceManager = new AudioDeviceManager(stateManager);

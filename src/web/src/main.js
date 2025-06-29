@@ -33,11 +33,10 @@ document.querySelector('#app').innerHTML = `
           <!-- Messages will be added here dynamically -->
         </div>
       </div>
-      <p class="read-the-docs">
-        Interactive Audiobot - Click to interact
-      </p>
-    </div>
     ${sidebarHTML}
+    <footer>
+    Copyright 2025. All rights reserved.<br/><br/>
+    </footer>
   </div>
 `
 

@@ -4,7 +4,7 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
+  color: black;
   background-color: white;
 
   font-synthesis: none;
@@ -144,5 +144,26 @@ button:focus-visible {
   }
   button {
     background-color: #f9f9f9;
+  }
+}
+
+.footer {
+  width: 100%;
+  padding: 1rem 0;
+  background: rgba(20, 162, 203, 0.08);
+  color: #213547;
+  text-align: center;
+  font-size: 1rem;
+  border-top: 1px solid #e0e0e0;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  z-index: 1000;
+}
+
+@media (max-width: 768px) {
+  .footer {
+    font-size: 0.9rem;
+    padding: 0.75rem 0;
   }
 }

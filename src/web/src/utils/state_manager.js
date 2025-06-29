@@ -201,25 +201,4 @@ class ButtonObserver {
   }
 }
 
-// Wake Word Observer to handle wake word toggle synchronization
-class WakeWordObserver {
-  constructor() {
-    this.wakeWordToggle = document.querySelector('#wakeword-toggle');
-  }
-
-  update(state) {
-    this.updateWakeWordToggle(state.wakeWordDetected);
-  }
-
-  updateWakeWordToggle(wakeWordDetected) {
-    if (this.wakeWordToggle) {
-      // Only update if the toggle state differs from the state manager
-      if (this.wakeWordToggle.checked !== wakeWordDetected) {
-        this.wakeWordToggle.checked = wakeWordDetected;
-        console.log('Wake word toggle updated to:', wakeWordDetected);
-      }
-    }
-  }
-}
-
-export { StateManager, UIObserver, DeviceImageObserver, ButtonObserver, WakeWordObserver };
+export { StateManager, UIObserver, DeviceImageObserver, ButtonObserver };

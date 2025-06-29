@@ -108,16 +108,6 @@ class SpeechRecognition {
       const data = await resp.json();
       console.log('Transcription:', data.transcription);
       
-      // Update wake word detection state if provided
-      // Only change from false to true, never from true to false
-      if (data.contains_wakephrase === true) {
-        const currentWakeWordState = this.stateManager.getState().wakeWordDetected;
-        if (!currentWakeWordState) {
-          this.stateManager.setWakeWordDetected(true);
-          console.log('Wake phrase detected: setting to true');
-        }
-      }
-      
       // Call the transcription callback
       this.onTranscription("user", data.transcription);
       

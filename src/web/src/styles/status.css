@@ -1,19 +1,26 @@
 /* Add these styles to your existing style.css */
 
 /* Status indicator styles */
-.status-indicator {
-  margin-top: 1rem;
-  padding: 1rem;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
 
 .status-text {
   display: block;
   font-weight: 500;
   margin-bottom: 0.5rem;
   transition: color 0.3s ease;
+}
+
+.status-indicator {
+  background-color: #ffffff; /* match white background */
+  color: #333333;            /* dark gray text for readability */
+  padding: 8px 12px;
+  border: 1px solid #cccccc; /* soft, subtle border */
+  border-radius: 6px;        /* rounded corners to match buttons */
+  font-size: 0.95rem;
+  font-weight: 500;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* gentle depth */
+  display: inline-block;
+  min-width: 100px;
+  text-align: center;
 }
 
 .status-text.listening {

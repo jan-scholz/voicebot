@@ -73,7 +73,6 @@ h1 {
   text-align: center;
 }
 
-
 .audiobot-logo {
   height: 3em;
   max-width: 250px;
@@ -110,19 +109,18 @@ h1 {
   color: #888;
 }
 
-
 button {
-background-color: transparent;
-    font-family: "Raleway", Sans-serif;
-    font-weight: 400;
-    text-decoration: none;
-    letter-spacing: 0.8px;
-    fill: #FFFFFF;
-    color: #FFFFFF;
-    background-image: linear-gradient(0deg, #14A2CB 0%, #47d4ff 60%);
-    box-shadow: 0px 4px 19px -5px rgba(0, 0, 0, 0.41);
-    border-radius: 8px 8px 8px 8px;
-    padding: 14px 14px 14px 14px;
+  background-color: transparent;
+  font-family: "Raleway", Sans-serif;
+  font-weight: 400;
+  text-decoration: none;
+  letter-spacing: 0.8px;
+  fill: #ffffff;
+  color: #ffffff;
+  background-image: linear-gradient(0deg, #14a2cb 0%, #47d4ff 60%);
+  box-shadow: 0px 4px 19px -5px rgba(0, 0, 0, 0.41);
+  border-radius: 8px 8px 8px 8px;
+  padding: 14px 14px 14px 14px;
 }
 
 button:hover {
@@ -147,13 +145,13 @@ button:focus-visible {
   }
 }
 
-.footer {
+footer {
   width: 100%;
   padding: 1rem 0;
-  background: rgba(20, 162, 203, 0.08);
+  background: rgba(182, 228, 242, 0.9);
   color: #213547;
   text-align: center;
-  font-size: 1rem;
+  font-size: 0.8rem;
   border-top: 1px solid #e0e0e0;
   position: fixed;
   left: 0;

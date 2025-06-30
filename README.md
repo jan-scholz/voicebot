@@ -58,6 +58,11 @@ make run-docker-env
 The `run-docker-env` target expects a `.env` file in the root directory to set the environment variables (e.g. Azure API keys).
 
 
+### Azure Deployment
+
+The [Deployment Guide](docs/deployment.md) explains how to build the docker image in a dedicated registry and deploy it to Azure App Service.
+
+
 ### Release
 
 

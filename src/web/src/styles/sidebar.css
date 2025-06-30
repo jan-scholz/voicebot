@@ -79,7 +79,7 @@
 }
 
 .section-header:hover {
-  background-color: #47d4ff
+  background-color: #47d4ff;
 }
 
 .section-title {
@@ -113,7 +113,7 @@
 .collapsible-section.expanded .section-header {
   background-color: #79e0ff;
 }
-  
+
 .profile-info {
   margin-top: 0.5rem;
 }
@@ -128,7 +128,7 @@
 .profile-info select {
   width: 100%;
   padding: 0.5rem;
-  color:black;
+  color: black;
   border: 1px solid #d1d5db;
   border-radius: 4px;
   font-size: 0.9em;
@@ -144,8 +144,8 @@
 
 .section-content textarea {
   width: calc(100% - 1rem);
-  background:white;
-  color:black;
+  background: white;
+  color: black;
   padding: 0.5rem;
   border: 1px solid #d1d5db;
   border-radius: 4px;
@@ -187,8 +187,8 @@
   flex: 1;
   padding: 0.5rem;
   border: 1px solid #d1d5db;
-  background:white;
-  color:black;
+  background: white;
+  color: black;
   border-radius: 4px;
   font-size: 0.9em;
 }
@@ -238,7 +238,7 @@
   border-radius: 4px;
   font-size: 0.85em;
   background-color: white;
-  color:black;
+  color: black;
   cursor: pointer;
   min-width: 200px;
 }
@@ -308,6 +308,7 @@
   padding: 0.25rem 0;
   border-bottom: 1px solid #e9ecef;
   color: #6b7280;
+  text-align: left;
 }
 
 .log-entry:last-child {

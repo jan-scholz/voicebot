@@ -11,7 +11,7 @@
 
 .chat-header {
   padding: 1rem 1.5rem;
-  background-color: #79e0ff;
+  background-color: #f8f9fa;
   border-bottom: 1px solid #e9ecef;
   cursor: pointer;
   display: flex;
@@ -22,7 +22,7 @@
 }
 
 .chat-header:hover {
-  background-color: #47d4ff;
+  background-color: #e9ecef;
 }
 
 .chat-header h3 {
@@ -58,7 +58,6 @@
 
 .chat-history.collapsed .chat-header {
   border-bottom: none;
-  background-color: #f8f9fa;
 }
 
 .chat-message {
@@ -86,7 +85,7 @@
 }
 
 .chat-message-user .chat-message-content {
-  background-color: #47d4ff;
+  background-color: #007bff;
   color: white;
   border-bottom-right-radius: 4px;
 }

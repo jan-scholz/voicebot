@@ -18,6 +18,7 @@ class ChatMessage(BaseModel):
 class TranscriptionMessage(BaseModel):
     transcription: str
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    contains_wakephrase: Optional[bool] = False
 
 
 class SpeechConfigMessage(BaseModel):

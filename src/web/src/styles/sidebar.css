@@ -9,7 +9,6 @@
   transform: translateX(100%);
   transition: transform 0.3s ease-in-out;
   z-index: 1000;
-  filter: drop-shadow 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .sidebar.open {
@@ -23,7 +22,7 @@
   transform: translateY(-50%);
   width: 40px;
   height: 60px;
-  background-color: white;
+  background-color: rgba(26, 26, 26, 0.95);
   border: 1px solid #333;
   border-right: none;
   border-radius: 8px 0 0 8px;
@@ -35,7 +34,7 @@
 }
 
 .sidebar-toggle:hover {
-  background-color: #47d4ff;
+  background-color: rgba(40, 40, 40, 0.95);
 }
 
 .arrow {
@@ -79,7 +78,7 @@
 }
 
 .section-header:hover {
-  background-color: #47d4ff;
+  background-color: #f3f4f6;
 }
 
 .section-title {
@@ -110,10 +109,6 @@
   transform: rotate(180deg);
 }
 
-.collapsible-section.expanded .section-header {
-  background-color: #79e0ff;
-}
-
 .profile-info {
   margin-top: 0.5rem;
 }
@@ -128,7 +123,6 @@
 .profile-info select {
   width: 100%;
   padding: 0.5rem;
-  color: black;
   border: 1px solid #d1d5db;
   border-radius: 4px;
   font-size: 0.9em;
@@ -144,8 +138,6 @@
 
 .section-content textarea {
   width: calc(100% - 1rem);
-  background: white;
-  color: black;
   padding: 0.5rem;
   border: 1px solid #d1d5db;
   border-radius: 4px;
@@ -187,8 +179,6 @@
   flex: 1;
   padding: 0.5rem;
   border: 1px solid #d1d5db;
-  background: white;
-  color: black;
   border-radius: 4px;
   font-size: 0.9em;
 }
@@ -238,7 +228,6 @@
   border-radius: 4px;
   font-size: 0.85em;
   background-color: white;
-  color: black;
   cursor: pointer;
   min-width: 200px;
 }
@@ -308,7 +297,6 @@
   padding: 0.25rem 0;
   border-bottom: 1px solid #e9ecef;
   color: #6b7280;
-  text-align: left;
 }
 
 .log-entry:last-child {

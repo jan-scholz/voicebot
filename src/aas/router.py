@@ -21,12 +21,14 @@ from fastapi import (
 from fastapi.responses import JSONResponse, StreamingResponse
 from openai import AzureOpenAI
 
-from aas.models import ChatMessage, Prompt, SpeechConfigMessage
+from aas.models import ChatMessage, Prompt, SpeechConfigMessage, TranscriptionMessage
 from aas.utils.chat import AzureChatBot
 from aas.utils.profile_manager import ProfileManager
 from aas.utils.speech_recognizer import AzureSpeechRecognizer
 from aas.utils.speech_synthesizer import AzureSpeechSynthesizer
+from aas.utils.wake_phrase import detect_wake_phrase
 
+WAKE_PHRASE = "hello bot"
 load_dotenv()
 
 profile_manager = ProfileManager()
@@ -86,13 +88,17 @@ async def process_audio(file: UploadFile = File(...)):
         print(f"[STT]: {len(audio_bytes)} bytes received")
 
         full_text = speech_recognizer.transcribe(audio_bytes)
+        contains_wakephrase = detect_wake_phrase(WAKE_PHRASE, text=full_text)
         if full_text:
             print(
                 f"[SST]: Transcribed: {full_text[:40]}",
                 "..." if len(full_text) > 20 else "",
             )
-        return JSONResponse(content={"transcription": full_text})
-        # return TranscriptionMessage(content=full_text)
+        # return JSONResponse(content={"transcription": full_text})
+        return TranscriptionMessage(
+            transcription=full_text,
+            contains_wakephrase=contains_wakephrase,
+        )
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {e}")

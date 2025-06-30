@@ -1,28 +1,19 @@
 /* Add these styles to your existing style.css */
 
 /* Status indicator styles */
-
-.status-text {
-  display: block; /* or inline-block */
-  font-weight: 500;
-  margin-bottom: 0; /* remove bottom margin if you want full centering */
-  transition: color 0.3s ease;
+.status-indicator {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.status-indicator {
-  background-color: #fff;
-  color: #333;
-  padding: 8px 12px;
-  border: 1px solid #cccccc;
-  border-radius: 6px;
-  font-size: 0.95rem;
+.status-text {
+  display: block;
   font-weight: 500;
-  box-shadow: 0 1px 2px #0000000d;
-  display: flex; /* changed from inline-block to flex */
-  align-items: center; /* vertically centers children */
-  justify-content: center; /* horizontally centers children (optional) */
-  min-width: 100px;
-  text-align: center;
+  margin-bottom: 0.5rem;
+  transition: color 0.3s ease;
 }
 
 .status-text.listening {

@@ -4,9 +4,6 @@ export const sidebarHTML = `
     <span class="arrow">›</span>
   </div>
   <div class="sidebar-content">
-    <div class="status-indicator" id="status-indicator">
-      <span class="status-text" id="status-text">Disconnected</span>
-    </div>
     <div class="collapsible-section">
       <div class="section-header" data-section="profile">
         <span class="section-title">Profile</span>

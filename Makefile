@@ -32,6 +32,9 @@ build-docker:
 run-docker:
 	docker run --rm -p 8000:8000 azure-app-demo
 
+run-docker-env:
+	docker run --rm -p 8000:8000 --env-file .env azure-app-demo
+
 clean:
 	rm -rf .coverage coverage.xml htmlcov dist build .pytest_cache .mypy_cache "src/"*.egg-info
 	find . -type d -name '__pycache__' -exec rm -rf {} +

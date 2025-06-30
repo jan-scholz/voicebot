@@ -52,8 +52,11 @@ We can build a docker image with the web app and FastAPI assets and run it local
 ```bash
 make clean
 make build-docker
-make run-docker
+make run-docker-env
 ```
+
+The `run-docker-env` target expects a `.env` file in the root directory to set the environment variables (e.g. Azure API keys).
+
 
 ### Release
 

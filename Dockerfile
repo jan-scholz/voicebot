@@ -18,6 +18,7 @@ WORKDIR /app
 COPY pyproject.toml .
 COPY LICENSE .
 COPY README.md .
+COPY user_profile.json .
 COPY src ./src
 
 

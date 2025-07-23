@@ -35,7 +35,7 @@
 }
 
 .sidebar-toggle:hover {
-  background-color: #47d4ff;
+  background-color: #fcad24aa;
 }
 
 .arrow {
@@ -79,7 +79,7 @@
 }
 
 .section-header:hover {
-  background-color: #47d4ff;
+  background-color: #f3f4f6;
 }
 
 .section-title {
@@ -111,7 +111,7 @@
 }
 
 .collapsible-section.expanded .section-header {
-  background-color: #79e0ff;
+  background-color: #f9fafb;
 }
 
 .profile-info {

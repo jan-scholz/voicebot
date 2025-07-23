@@ -34,9 +34,6 @@ document.querySelector('#app').innerHTML = `
         </div>
       </div>
     ${sidebarHTML}
-    <footer>
-    Copyright 2025. All rights reserved.<br/><br/>
-    </footer>
   </div>
 `
 

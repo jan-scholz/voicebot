@@ -1,0 +1,52 @@
+# Bytecode and compiled files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environment
+.venv/
+env/
+venv/
+
+# IDEs/editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test output and coverage
+.coverage
+htmlcov/
+.tox/
+.pytest_cache/
+coverage.xml
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Hatch-specific
+.hatch/
+
+# Logs and temp files
+*.log
+*.tmp
+*.bak
+*.wav
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+
+tmp/
+.env
+.venv
+uv.lock
